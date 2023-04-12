@@ -135,55 +135,69 @@
             updateHistogram();
         }
 
+        function createHistogram() {
+            const data = {
+                labels: Array.from({ length: 11 }, (_, i) => i + 2),
+                datasets: [
+                    {
+                        data: Array.from({ length: 11 }, (_, i) => rollCounts[i + 2] || 0),
+                        backgroundColor: '#4CAF50',
+                        borderWidth: 1,
+                    },
+                ],
+            };
+
+            const options = {
+                plugins: {
+                    legend: { display: false },
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                    },
+                    y: {
+                        grid: { display: false },
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            callback: (value) => (Number.isInteger(value) ? value : null),
+                        },
+                    },
+                },
+            };
+
+            return new Chart(histogram, {
+                type: 'bar',
+                data: data,
+                options: options,
+            });
+        }
+
+
         function toggleHistogram() {
             if (showHistogram.checked) {
                 histogram.canvas.style.display = 'block';
+                if (!window.myChart) {
+                    window.myChart = createHistogram();
+                }
             } else {
                 histogram.canvas.style.display = 'none';
             }
         }
 
-    function updateHistogram() {
-        if (window.myChart) {
-            window.myChart.destroy();
+
+        function updateHistogram() {
+            if (!window.myChart) {
+                return;
+            }
+            
+            window.myChart.data.datasets[0].data = Array.from(
+                { length: 11 },
+                (_, i) => rollCounts[i + 2] || 0
+            );
+            window.myChart.update();
         }
 
-        const data = {
-            labels: Array.from({ length: 11 }, (_, i) => i + 2),
-            datasets: [
-                {
-                    data: Array.from({ length: 11 }, (_, i) => rollCounts[i + 2] || 0),
-                    backgroundColor: '#4CAF50',
-                    borderWidth: 1,
-                },
-            ],
-        };
-
-        const options = {
-            plugins: {
-                legend: { display: false },
-            },
-            scales: {
-                x: {
-                    grid: { display: false },
-                },
-                y: {
-                    grid: { display: false },
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1,
-                        callback: (value) => (Number.isInteger(value) ? value : null),
-                    },
-                },
-            },
-        };
-
-        window.myChart = new Chart(histogram, {
-            type: 'bar',
-            data: data,
-            options: options,
-        });
-    }
 
 
     </script>
