@@ -44,6 +44,10 @@
             cursor: pointer;
             border-radius: 5px;
         }
+        button.disabled {
+            background-color: #888;
+            cursor: not-allowed;
+        }
         .checkbox-container {
             margin-top: 1rem;
         }
@@ -67,7 +71,7 @@
             <img id="dice1" class="dice" src="https://www.svgrepo.com/show/499118/dice-one.svg" alt="Dice 1">
             <img id="dice2" class="dice" src="https://www.svgrepo.com/show/499118/dice-one.svg" alt="Dice 2">
         </div>
-        <button onclick="rollDice()">Roll</button>
+        <button onclick="rollDice()" id="rollButton">Roll</button>
         <p id="message"></p>
         <div class="checkbox-container">
             <input type="checkbox" id="showHistogram" onchange="toggleHistogram()"> Show Histogram
@@ -78,6 +82,7 @@
     <script>
         const dice1 = document.getElementById('dice1');
         const dice2 = document.getElementById('dice2');
+        const rollButton = document.getElementById('rollButton');
         const message = document.getElementById('message');
         const diceSound = new Audio('https://tomginsberg.github.io/dice/dice.mp3');
         const showHistogram = document.getElementById('showHistogram');
@@ -88,7 +93,8 @@
             'https://www.svgrepo.com/show/499121/dice-three.svg',
             'https://www.svgrepo.com/show/499119/dice-four.svg',
             'https://www.svgrepo.com/show/499117/dice-five.svg',
-            'https://www.svgrepo.com/show/499120/dice-six.svg'
+            'https://www.svgrepo.com/show/499120/dice-six.svg',
+            'https://www.svgrepo.com/show/143418/question-mark-inside-square.svg'
         ];
 
         let rolls = generateRolls();
@@ -114,26 +120,35 @@
         }
 
         function rollDice() {
-            diceSound.play();
-            const roll = rolls.pop();
+    diceSound.play();
+    const roll = rolls.pop();
 
-            if (roll === 'wild') {
-                message.innerText = 'Wild card... resetting';
-                rolls = generateRolls();
-                rollCounts = {};
-                setTimeout(() => {
-                    message.innerText = '';
-                }, 2000);
-                return;
-            }
+    if (roll === 'wild') {
+        message.innerText = 'Wild card... resetting';
+        rollButton.classList.add('disabled'); // Add the disabled class
+        rollButton.disabled = true; // Disable the button
+        dice1.src = diceUrls[6]; // Set the dice1 icon to the question mark icon
+        dice2.src = diceUrls[6]; // Set the dice2 icon to the question mark icon
+        setTimeout(() => {
+            message.innerText = '';
+            rolls = generateRolls();
+            rollCounts = {};
+            rollButton.classList.remove('disabled'); // Remove the disabled class
+            rollButton.disabled = false; // Enable the button after 2 seconds
+        }, 2000);
+        return;
+    }
 
-            dice1.src = diceUrls[roll[0] - 1];
-            dice2.src = diceUrls[roll[1] - 1];
+    dice1.src = diceUrls[roll[0] - 1];
+    dice2.src = diceUrls[roll[1] - 1];
 
-            const rollSum = roll[0] + roll[1];
-            rollCounts[rollSum] = (rollCounts[rollSum] || 0) + 1;
-            updateHistogram();
-        }
+    const rollSum = roll[0] + roll[1];
+    rollCounts[rollSum] = (rollCounts[rollSum] || 0) + 1;
+    updateHistogram();
+}
+
+
+
 
         function createHistogram() {
             const data = {
