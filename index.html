@@ -1,42 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Roll Button</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: linear-gradient(135deg, #111, #333);
-    }
-
-    button {
-      font-size: 24px;
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Roll Tracker</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #111, #333);
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 10px;
+        }
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .dice {
+            width: 50px;
+            height: 50px;
+            margin: 0 0.5rem;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+            margin: 0.25rem 0;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-  <button id="rollBtn">Roll!</button>
+    <div class="container">
+        <div class="dice-container">
+            <img id="dice1" class="dice" src="https://www.svgrepo.com/show/499118/dice-one.svg" alt="Dice 1">
+            <img id="dice2" class="dice" src="https://www.svgrepo.com/show/499118/dice-one.svg" alt="Dice 2">
+        </div>
+        <button onclick="rollDice()">Roll</button>
+        <p id="message"></p>
+    </div>
+    <script>
+        const dice1 = document.getElementById('dice1');
+        const dice2 = document.getElementById('dice2');
+        const message = document.getElementById('message');
+        const diceSound = new Audio('https://tomginsberg.github.io/dice/dice.mp3');
+        const diceUrls = [
+            'https://www.svgrepo.com/show/499118/dice-one.svg',
+            'https://www.svgrepo.com/show/499122/dice-two.svg',
+            'https://www.svgrepo.com/show/499121/dice-three.svg',
+            'https://www.svgrepo.com/show/499119/dice-four.svg',
+            'https://www.svgrepo.com/show/499117/dice-five.svg',
+            'https://www.svgrepo.com/show/499120/dice-six.svg'
+        ];
 
-  <script>
-    document.getElementById('rollBtn').addEventListener('click', function() {
-      alert('You clicked Roll!');
-    });
-  </script>
+        let rolls = generateRolls();
+
+        function generateRolls() {
+            const rolls = [];
+            for (let i = 1; i <= 6; i++) {
+                for (let j = 1; j <= 6; j++) {
+                    rolls.push([i, j]);
+                }
+            }
+            rolls.push('wild');
+            shuffleArray(rolls);
+            return rolls;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] =
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function rollDice() {
+            diceSound.play();
+            const roll = rolls.pop();
+
+            if (roll === 'wild') {
+                message.innerText = 'Wild card... resetting';
+                rolls = generateRolls();
+                setTimeout(() => {
+                    message.innerText = '';
+                }, 2000);
+                return;
+            }
+
+            dice1.src = diceUrls[roll[0] - 1];
+            dice2.src = diceUrls[roll[1] - 1];
+        }
+    </script>
 </body>
 </html>
