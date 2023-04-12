@@ -43,6 +43,21 @@
             cursor: pointer;
             border-radius: 5px;
         }
+        .checkbox-container {
+            margin-top: 1rem;
+        }
+        .histogram {
+            display: none;
+            width: 50%;
+            margin: 1rem auto;
+            border-collapse: collapse;
+        }
+        .histogram th, .histogram td {
+            border: 1px solid #ccc;
+            padding: 0.5rem;
+            text-align: center;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -53,13 +68,29 @@
         </div>
         <button onclick="rollDice()">Roll</button>
         <p id="message"></p>
+        <div class="checkbox-container">
+            <input type="checkbox" id="showHistogram" onchange="toggleHistogram()"> Show Histogram
+        </div>
+        <table class="histogram" id="histogram">
+            <thead>
+                <tr>
+                    <th>Roll</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody id="histogramBody">
+            </tbody>
+        </table>
     </div>
     <script>
         const dice1 = document.getElementById('dice1');
         const dice2 = document.getElementById('dice2');
         const message = document.getElementById('message');
         const diceSound = new Audio('https://tomginsberg.github.io/dice/dice.mp3');
-        const diceUrls = [
+        const showHistogram = document.getElementById('showHistogram');
+        const histogram = document.getElementById('histogram');
+        const histogramBody = document.getElementById('histogramBody');
+        const diceUrls = [            
             'https://www.svgrepo.com/show/499118/dice-one.svg',
             'https://www.svgrepo.com/show/499122/dice-two.svg',
             'https://www.svgrepo.com/show/499121/dice-three.svg',
@@ -69,6 +100,7 @@
         ];
 
         let rolls = generateRolls();
+        let rollCounts = {};
 
         function generateRolls() {
             const rolls = [];
@@ -85,7 +117,6 @@
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] =
                 [array[i], array[j]] = [array[j], array[i]];
             }
         }
@@ -105,7 +136,34 @@
 
             dice1.src = diceUrls[roll[0] - 1];
             dice2.src = diceUrls[roll[1] - 1];
+
+            const rollKey = `${roll[0]},${roll[1]}`;
+            rollCounts[rollKey] = (rollCounts[rollKey] || 0) + 1;
+            updateHistogram();
+        }
+
+        function toggleHistogram() {
+            if (showHistogram.checked) {
+                histogram.style.display = 'table';
+            } else {
+                histogram.style.display = 'none';
+            }
+        }
+
+        function updateHistogram() {
+            histogramBody.innerHTML = '';
+            Object.keys(rollCounts).sort().forEach(key => {
+                const row = document.createElement('tr');
+                const cell1 = document.createElement('td');
+                const cell2 = document.createElement('td');
+                cell1.textContent = key;
+                cell2.textContent = rollCounts[key];
+                row.appendChild(cell1);
+                row.appendChild(cell2);
+                histogramBody.appendChild(row);
+            });
         }
     </script>
 </body>
 </html>
+
