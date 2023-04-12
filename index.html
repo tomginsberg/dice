@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Dice Roll Tracker</title>
     <style>
         body {
@@ -71,16 +72,8 @@
         <div class="checkbox-container">
             <input type="checkbox" id="showHistogram" onchange="toggleHistogram()"> Show Histogram
         </div>
-        <table class="histogram" id="histogram">
-            <thead>
-                <tr>
-                    <th>Roll</th>
-                    <th>Count</th>
-                </tr>
-            </thead>
-            <tbody id="histogramBody">
-            </tbody>
-        </table>
+        <canvas id="histogram" style="display: none;"></canvas>
+        
     </div>
     <script>
         const dice1 = document.getElementById('dice1');
@@ -88,8 +81,7 @@
         const message = document.getElementById('message');
         const diceSound = new Audio('https://tomginsberg.github.io/dice/dice.mp3');
         const showHistogram = document.getElementById('showHistogram');
-        const histogram = document.getElementById('histogram');
-        const histogramBody = document.getElementById('histogramBody');
+        const histogram = document.getElementById('histogram').getContext('2d');
         const diceUrls = [            
             'https://www.svgrepo.com/show/499118/dice-one.svg',
             'https://www.svgrepo.com/show/499122/dice-two.svg',
@@ -128,6 +120,7 @@
             if (roll === 'wild') {
                 message.innerText = 'Wild card... resetting';
                 rolls = generateRolls();
+                rollCounts = {};
                 setTimeout(() => {
                     message.innerText = '';
                 }, 2000);
@@ -144,25 +137,55 @@
 
         function toggleHistogram() {
             if (showHistogram.checked) {
-                histogram.style.display = 'table';
+                histogram.canvas.style.display = 'block';
             } else {
-                histogram.style.display = 'none';
+                histogram.canvas.style.display = 'none';
             }
         }
 
-        function updateHistogram() {
-            histogramBody.innerHTML = '';
-            for (let i = 2; i <= 12; i++) {
-                const row = document.createElement('tr');
-                const cell1 = document.createElement('td');
-                const cell2 = document.createElement('td');
-                cell1.textContent = i;
-                cell2.textContent = rollCounts[i] || 0;
-                row.appendChild(cell1);
-                row.appendChild(cell2);
-                histogramBody.appendChild(row);
-            }
+    function updateHistogram() {
+        if (window.myChart) {
+            window.myChart.destroy();
         }
+
+        const data = {
+            labels: Array.from({ length: 11 }, (_, i) => i + 2),
+            datasets: [
+                {
+                    data: Array.from({ length: 11 }, (_, i) => rollCounts[i + 2] || 0),
+                    backgroundColor: '#4CAF50',
+                    borderWidth: 1,
+                },
+            ],
+        };
+
+        const options = {
+            plugins: {
+                legend: { display: false },
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                },
+                y: {
+                    grid: { display: false },
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        callback: (value) => (Number.isInteger(value) ? value : null),
+                    },
+                },
+            },
+        };
+
+        window.myChart = new Chart(histogram, {
+            type: 'bar',
+            data: data,
+            options: options,
+        });
+    }
+
+
     </script>
 </body>
 </html>
