@@ -72,7 +72,7 @@
         <div class="checkbox-container">
             <input type="checkbox" id="showHistogram" onchange="toggleHistogram()"> Show Histogram
         </div>
-        <canvas id="histogram" style="display: none;"></canvas>
+        <canvas id="histogram" style="opacity: 0; pointer-events: none;"></canvas>
         
     </div>
     <script>
@@ -176,14 +176,18 @@
 
         function toggleHistogram() {
             if (showHistogram.checked) {
-                histogram.canvas.style.display = 'block';
+                histogram.canvas.style.opacity = 1;
+                histogram.canvas.style.pointerEvents = 'auto';
                 if (!window.myChart) {
                     window.myChart = createHistogram();
                 }
             } else {
-                histogram.canvas.style.display = 'none';
+                histogram.canvas.style.opacity = 0;
+                histogram.canvas.style.pointerEvents = 'none';
             }
         }
+
+
 
 
         function updateHistogram() {
