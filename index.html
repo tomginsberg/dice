@@ -137,8 +137,8 @@
             dice1.src = diceUrls[roll[0] - 1];
             dice2.src = diceUrls[roll[1] - 1];
 
-            const rollKey = `${roll[0]},${roll[1]}`;
-            rollCounts[rollKey] = (rollCounts[rollKey] || 0) + 1;
+            const rollSum = roll[0] + roll[1];
+            rollCounts[rollSum] = (rollCounts[rollSum] || 0) + 1;
             updateHistogram();
         }
 
@@ -152,16 +152,16 @@
 
         function updateHistogram() {
             histogramBody.innerHTML = '';
-            Object.keys(rollCounts).sort().forEach(key => {
+            for (let i = 2; i <= 12; i++) {
                 const row = document.createElement('tr');
                 const cell1 = document.createElement('td');
                 const cell2 = document.createElement('td');
-                cell1.textContent = key;
-                cell2.textContent = rollCounts[key];
+                cell1.textContent = i;
+                cell2.textContent = rollCounts[i] || 0;
                 row.appendChild(cell1);
                 row.appendChild(cell2);
                 histogramBody.appendChild(row);
-            });
+            }
         }
     </script>
 </body>
