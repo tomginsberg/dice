@@ -169,14 +169,41 @@
         }
 
         #dice1 {
-    filter: invert(35%) sepia(100%) saturate(3000%) hue-rotate(-10deg);
-}
+            filter: invert(35%) sepia(100%) saturate(3000%) hue-rotate(-10deg);
+        }
 
 
-#dice2 {
-    filter: invert(85%) sepia(100%) saturate(600%) hue-rotate(5deg);
-}
+        #dice2 {
+            filter: invert(85%) sepia(100%) saturate(600%) hue-rotate(5deg);
+        }
 
+
+
+        .status-bar {
+            display: flex;
+            margin-bottom: 10px;
+            /* Space between the status bar and the dice */
+        }
+
+        .status-interval {
+            flex: 1;
+            height: 10px;
+            /* Adjust height as needed */
+            background-color: #ccc;
+            /* Default color */
+            margin-right: 2px;
+            /* Space between intervals */
+        }
+
+        .status-interval:last-child {
+            margin-right: 0;
+            /* No margin for the last interval */
+        }
+
+        .status-interval.active {
+            background-color: #4CAF50;
+            /* Active color */
+        }
 
 
         }
@@ -195,6 +222,16 @@
     <div id="mainUI" style="display: none;">
 
         <div class="container">
+            <div id="statusBar" class="status-bar">
+                <div class="status-interval active"></div>
+                <div class="status-interval"></div>
+                <div class="status-interval"></div>
+                <div class="status-interval"></div>
+                <div class="status-interval"></div>
+                <div class="status-interval"></div>
+                <div class="status-interval"></div>
+                <div class="status-interval"></div>
+            </div>
             <h2 id="currentPlayer" style="color: white;"></h2>
             <div class="dice-container">
                 <img id="dice1" class="dice" src="https://www.svgrepo.com/show/499118/dice-one.svg" alt="Dice 1">
@@ -230,6 +267,7 @@
         const rollButton = document.getElementById('rollButton');
         const message = document.getElementById('message');
         const diceSound = new Audio('https://tomginsberg.github.io/dice/dice.mp3');
+        const attackSound = new Audio('https://tomginsberg.github.io/dice/attack.mp3');
         const showHistogram = document.getElementById('showHistogram');
         const histogram = document.getElementById('histogram').getContext('2d');
         const diceUrls = [
@@ -244,6 +282,7 @@
 
         let rolls = generateRolls();
         let rollCounts = {};
+        let activeIntervals = 1;
         document.getElementById('toggleSwitch').addEventListener('change', toggleView);
 
 
@@ -293,6 +332,7 @@
 
             dice1.src = diceUrls[roll[0] - 1];
             dice2.src = diceUrls[roll[1] - 1];
+            setColorSquare('colorSquare1');
 
             const rollSum = roll[0] + roll[1];
             rollCounts[rollSum] = (rollCounts[rollSum] || 0) + 1;
@@ -308,6 +348,31 @@
             }, 1000);
         }
 
+        function setColorSquare(squareId) {
+            const randomValue = Math.random();
+
+            let chosenColor;
+
+            if (randomValue < 0.5) {
+                chosenColor = 'black';
+                incrementStatusBar();
+            } else if (randomValue < 0.66) {
+                chosenColor = 'yellow';
+            } else if (randomValue < 0.83) {
+                chosenColor = 'green';
+            } else {
+                chosenColor = 'blue';
+            }
+
+            updateStatusBarColor(chosenColor);
+        }
+
+        function updateStatusBarColor(color) {
+            const intervals = document.querySelectorAll('.status-interval.active');
+            intervals.forEach(interval => {
+                interval.style.backgroundColor = color;
+            });
+        }
 
 
 
@@ -462,6 +527,40 @@
                 options: options,
             });
         }
+
+        function incrementStatusBar() {
+            if (activeIntervals < 7) {
+                activeIntervals++;
+                document.querySelectorAll('.status-interval')[activeIntervals - 1].classList.add('active');
+            } else {
+                attackSound.play()
+                activeIntervals++;
+                document.querySelectorAll('.status-interval')[activeIntervals - 1].classList.add('active');
+                updateStatusBarColor('red')
+
+                rollButton.classList.add('disabled'); // Add the disabled class
+                rollButton.disabled = true; // Disable the button
+
+                setTimeout(() => {
+                    rollButton.classList.remove('disabled'); // Remove the disabled class
+                    rollButton.disabled = false; // Enable the button after 3 seconds
+                    resetStatusBar();
+                }, 1000);
+            }
+        }
+
+        function resetStatusBar() {
+    activeIntervals = 1;
+    const intervals = document.querySelectorAll('.status-interval');
+    intervals.forEach(interval => {
+        interval.classList.remove('active');
+        interval.style.backgroundColor = '#ccc'; // Reset color to the original gray
+    });
+    intervals[0].classList.add('active');
+    intervals[0].style.backgroundColor = ''; // Let the CSS handle the color of the active interval
+    updateStatusBarColor('black')
+}
+
 
 
 
