@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap">
     <title>Dice Roll Tracker</title>
     <style>
         body {
@@ -15,22 +17,26 @@
             height: 100vh;
             margin: 0;
         }
+
         .container {
             text-align: center;
             background-color: rgba(255, 255, 255, 0.1);
             padding: 2rem;
             border-radius: 10px;
         }
+
         .dice-container {
             display: flex;
             justify-content: center;
             margin-bottom: 1rem;
         }
+
         .dice {
             width: 50px;
             height: 50px;
             margin: 0 0.5rem;
         }
+
         button {
             background-color: #4CAF50;
             border: none;
@@ -44,42 +50,173 @@
             cursor: pointer;
             border-radius: 5px;
         }
+
         button.disabled {
             background-color: #888;
             cursor: not-allowed;
         }
+
         .checkbox-container {
             margin-top: 1rem;
         }
+
         .histogram {
             display: none;
             width: 50%;
             margin: 1rem auto;
             border-collapse: collapse;
         }
-        .histogram th, .histogram td {
+
+        .histogram th,
+        .histogram td {
             border: 1px solid #ccc;
             padding: 0.5rem;
             text-align: center;
             color: white;
         }
+
+        #currentPlayer {
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'Pacifico', cursive;
+            font-size: 2rem;
+        }
+
+        /* Toggle Switch Styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 100px;
+            /* Adjusted width */
+            height: 34px;
+            font-family: Arial, sans-serif;
+            /* Ensure consistent font */
+        }
+
+        .label-text {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .label-text:first-child {
+            left: -40px;
+            /* Adjust as needed for spacing */
+        }
+
+        .label-text:last-child {
+            right: -45px;
+            /* Adjust as needed for spacing */
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #4CAF50;
+            transition: .4s;
+            border-radius: 26px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(66px);
+        }
+
+        #playerInputContainer {
+            text-align: center;
+            /* Center the contents of the container */
+        }
+
+        #playerNames {
+            height: auto;
+            /* Adjust to fit content */
+            display: block;
+            margin: 0 auto 10px;
+            width: 90%;
+            resize: none;
+            /* Prevent resizing of the textarea */
+            overflow: auto;
+            /* Hide scrollbars when they're not needed */
+            padding: 5px;
+            /* Add some padding for the text */
+        }
+
+
+
+
+        }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="dice-container">
-            <img id="dice1" class="dice" src="https://www.svgrepo.com/show/499118/dice-one.svg" alt="Dice 1">
-            <img id="dice2" class="dice" src="https://www.svgrepo.com/show/499118/dice-one.svg" alt="Dice 2">
-        </div>
-        <button onclick="rollDice()" id="rollButton">Roll</button>
-        <p id="message"></p>
-        <div class="checkbox-container">
-            <input type="checkbox" id="showHistogram" onchange="toggleHistogram()"> Show Histogram
-        </div>
-        <canvas id="histogram" style="opacity: 0; pointer-events: none;"></canvas>
-        
+    <div id="playerInputContainer">
+        <textarea id="playerNames" rows="3" placeholder="Enter player names separated by commas"></textarea>
+
+        <button onclick="startGame();updateHistogram()">Start Game</button>
     </div>
+
+
+
+    <div id="mainUI" style="display: none;">
+
+        <div class="container">
+            <h2 id="currentPlayer" style="color: white;"></h2>
+            <div class="dice-container">
+                <img id="dice1" class="dice" src="https://www.svgrepo.com/show/499118/dice-one.svg" alt="Dice 1">
+                <img id="dice2" class="dice" src="https://www.svgrepo.com/show/499118/dice-one.svg" alt="Dice 2">
+            </div>
+            <button onclick="rollDice()" id="rollButton">Roll</button>
+            <p id="message"></p>
+            <div class="checkbox-container">
+                <label class="switch">
+                    <span class="label-text">Dice</span>
+                    <input type="checkbox" id="toggleSwitch">
+                    <span class="slider"></span>
+                    <span class="label-text">Turns</span>
+                </label>
+            </div>
+            <canvas id="histogram" style="opacity: 1; pointer-events: auto;"></canvas>
+
+        </div>
+    </div>
+
     <script>
+        const playerInputContainer = document.getElementById('playerInputContainer');
+        const playerNamesInput = document.getElementById('playerNames');
+        const currentPlayerDisplay = document.getElementById('currentPlayer');
+        let players = [];
+        let currentPlayerIndex = 0;
+        let viewMode = 'histogram'; // can be 'histogram' or 'playerTimes'
+        let playerTimes = {};
+        let startTime;
+
         const dice1 = document.getElementById('dice1');
         const dice2 = document.getElementById('dice2');
         const rollButton = document.getElementById('rollButton');
@@ -87,7 +224,7 @@
         const diceSound = new Audio('https://tomginsberg.github.io/dice/dice.mp3');
         const showHistogram = document.getElementById('showHistogram');
         const histogram = document.getElementById('histogram').getContext('2d');
-        const diceUrls = [            
+        const diceUrls = [
             'https://www.svgrepo.com/show/499118/dice-one.svg',
             'https://www.svgrepo.com/show/499122/dice-two.svg',
             'https://www.svgrepo.com/show/499121/dice-three.svg',
@@ -99,6 +236,8 @@
 
         let rolls = generateRolls();
         let rollCounts = {};
+        document.getElementById('toggleSwitch').addEventListener('change', toggleView);
+
 
         function generateRolls() {
             const rolls = [];
@@ -120,32 +259,46 @@
         }
 
         function rollDice() {
-    diceSound.play();
-    const roll = rolls.pop();
 
-    if (roll === 'wild') {
-        message.innerText = 'Wild card... resetting';
-        rollButton.classList.add('disabled'); // Add the disabled class
-        rollButton.disabled = true; // Disable the button
-        dice1.src = diceUrls[6]; // Set the dice1 icon to the question mark icon
-        dice2.src = diceUrls[6]; // Set the dice2 icon to the question mark icon
-        setTimeout(() => {
-            message.innerText = '';
-            rolls = generateRolls();
-            rollCounts = {};
-            rollButton.classList.remove('disabled'); // Remove the disabled class
-            rollButton.disabled = false; // Enable the button after 2 seconds
-        }, 2000);
-        return;
-    }
+            diceSound.play();
+            rollButton.classList.add('disabled'); // Add the disabled class
+            rollButton.disabled = true; // Disable the button
 
-    dice1.src = diceUrls[roll[0] - 1];
-    dice2.src = diceUrls[roll[1] - 1];
+            const roll = rolls.pop();
 
-    const rollSum = roll[0] + roll[1];
-    rollCounts[rollSum] = (rollCounts[rollSum] || 0) + 1;
-    updateHistogram();
-}
+            if (roll === 'wild') {
+                message.innerText = 'Wild card... resetting';
+                dice1.src = diceUrls[6]; // Set the dice1 icon to the question mark icon
+                dice2.src = diceUrls[6]; // Set the dice2 icon to the question mark icon
+                setTimeout(() => {
+                    message.innerText = '';
+                    rolls = generateRolls();
+                    rollCounts = {};
+                    rollButton.classList.remove('disabled'); // Remove the disabled class
+                    rollButton.disabled = false; // Enable the button after 2 seconds
+                }, 2000);
+                return;
+            }
+            nextTurn();
+
+
+
+            dice1.src = diceUrls[roll[0] - 1];
+            dice2.src = diceUrls[roll[1] - 1];
+
+            const rollSum = roll[0] + roll[1];
+            rollCounts[rollSum] = (rollCounts[rollSum] || 0) + 1;
+            if (viewMode === 'histogram') {
+                updateHistogram();
+            } else {
+                updatePlayerTimesChart();
+            }
+
+            setTimeout(() => {
+                rollButton.classList.remove('disabled'); // Remove the disabled class
+                rollButton.disabled = false; // Enable the button after 2 seconds
+            }, 1000);
+        }
 
 
 
@@ -189,16 +342,51 @@
         }
 
 
-        function toggleHistogram() {
-            if (showHistogram.checked) {
-                histogram.canvas.style.opacity = 1;
-                histogram.canvas.style.pointerEvents = 'auto';
-                if (!window.myChart) {
-                    window.myChart = createHistogram();
-                }
+        function startGame() {
+            const names = playerNamesInput.value.split(',').map(name => name.trim());
+            if (names.length < 1) {
+                alert('Please enter at least one player name.');
+                return;
+            }
+
+            players = names;
+            playerInputContainer.style.display = 'none';
+            document.getElementById('mainUI').style.display = 'block'; // Show the main UI
+            players.forEach(player => {
+                playerTimes[player] = 0;
+            });
+            rollDice();
+
+
+        }
+
+        function nextTurn() {
+            if (startTime) {
+                const endTime = new Date();
+                const timeTaken = (endTime - startTime) / 1000 / 60; // in mins
+                const previousPlayer = players[currentPlayerIndex - 1] || players[players.length - 1];
+                playerTimes[previousPlayer] += timeTaken;
+            }
+            if (currentPlayerIndex >= players.length) {
+                currentPlayerIndex = 0;
+            }
+            currentPlayerDisplay.textContent = `${players[currentPlayerIndex]}'s Turn`;
+            currentPlayerIndex++;
+            startTime = new Date();
+        }
+
+        function toggleView() {
+            if (window.myChart) {
+                window.myChart.destroy();
+                window.myChart = null;
+            }
+
+            if (viewMode === 'histogram') {
+                viewMode = 'playerTimes';
+                updatePlayerTimesChart();
             } else {
-                histogram.canvas.style.opacity = 0;
-                histogram.canvas.style.pointerEvents = 'none';
+                viewMode = 'histogram';
+                updateHistogram();
             }
         }
 
@@ -207,19 +395,71 @@
 
         function updateHistogram() {
             if (!window.myChart) {
-                return;
+                window.myChart = createHistogram();
+            } else {
+                window.myChart.data.datasets[0].data = Array.from(
+                    { length: 11 },
+                    (_, i) => rollCounts[i + 2] || 0
+                );
+                window.myChart.update();
             }
-            
-            window.myChart.data.datasets[0].data = Array.from(
-                { length: 11 },
-                (_, i) => rollCounts[i + 2] || 0
-            );
-            window.myChart.update();
         }
+
+        function updatePlayerTimesChart() {
+            if (!window.myChart) {
+                window.myChart = createPlayerTimesChart();
+            } else {
+                window.myChart.data.labels = Object.keys(playerTimes);
+                window.myChart.data.datasets[0].data = Object.values(playerTimes);
+                window.myChart.update();
+            }
+        }
+
+
+
+        function createPlayerTimesChart() {
+            const data = {
+                labels: Object.keys(playerTimes),
+                datasets: [
+                    {
+                        data: Object.values(playerTimes),
+                        backgroundColor: '#4CAF50',
+                        borderWidth: 1,
+                    },
+                ],
+            };
+
+            const options = {
+                plugins: {
+                    legend: { display: false },
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                    },
+                    y: {
+                        grid: { display: false },
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Time (mins)'
+                        }
+                    },
+                },
+            };
+
+            return new Chart(histogram, {
+                type: 'bar',
+                data: data,
+                options: options,
+            });
+        }
+
+
 
 
 
     </script>
 </body>
-</html>
 
+</html>
