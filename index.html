@@ -4,223 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap">
     <title>Dice Roll Tracker</title>
-    <style>
-        body {
-            background: linear-gradient(135deg, #111, #333);
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            text-align: center;
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 2rem;
-            border-radius: 10px;
-        }
-
-        .dice-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 1rem;
-        }
-
-        .dice {
-            width: 50px;
-            height: 50px;
-            margin: 0 0.5rem;
-        }
-
-        button {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 1rem;
-            margin: 0.25rem 0;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        button.disabled {
-            background-color: #888;
-            cursor: not-allowed;
-        }
-
-        .checkbox-container {
-            margin-top: 1rem;
-        }
-
-        .histogram {
-            display: none;
-            width: 50%;
-            margin: 1rem auto;
-            border-collapse: collapse;
-        }
-
-        .histogram th,
-        .histogram td {
-            border: 1px solid #ccc;
-            padding: 0.5rem;
-            text-align: center;
-            color: white;
-        }
-
-        #currentPlayer {
-            text-align: center;
-            margin-bottom: 20px;
-            font-family: 'Pacifico', cursive;
-            font-size: 2rem;
-        }
-
-        /* Toggle Switch Styles */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 100px;
-            /* Adjusted width */
-            height: 34px;
-            font-family: Arial, sans-serif;
-            /* Ensure consistent font */
-        }
-
-        .label-text {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        .label-text:first-child {
-            left: -40px;
-            /* Adjust as needed for spacing */
-        }
-
-        .label-text:last-child {
-            right: -45px;
-            /* Adjust as needed for spacing */
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #4CAF50;
-            transition: .4s;
-            border-radius: 26px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked+.slider {
-            background-color: #4CAF50;
-        }
-
-        input:checked+.slider:before {
-            transform: translateX(66px);
-        }
-
-        #playerInputContainer {
-            text-align: center;
-            /* Center the contents of the container */
-        }
-
-        #playerNames {
-            height: auto;
-            /* Adjust to fit content */
-            display: block;
-            margin: 0 auto 10px;
-            width: 90%;
-            resize: none;
-            /* Prevent resizing of the textarea */
-            overflow: auto;
-            /* Hide scrollbars when they're not needed */
-            padding: 5px;
-            /* Add some padding for the text */
-        }
-
-        #dice1 {
-            filter: invert(35%) sepia(100%) saturate(3000%) hue-rotate(-10deg);
-        }
-
-
-        #dice2 {
-            filter: invert(85%) sepia(100%) saturate(600%) hue-rotate(5deg);
-        }
-
-
-
-        .status-bar {
-            display: flex;
-            margin-bottom: 10px;
-            /* Space between the status bar and the dice */
-        }
-
-        .status-interval {
-            flex: 1;
-            height: 10px;
-            /* Adjust height as needed */
-            background-color: #ccc;
-            /* Default color */
-            margin-right: 2px;
-            /* Space between intervals */
-        }
-
-        .status-interval:last-child {
-            margin-right: 0;
-            /* No margin for the last interval */
-        }
-
-        .status-interval.active {
-            background-color: #4CAF50;
-            /* Active color */
-        }
-
-
-        }
-    </style>
 </head>
 
 <body>
     <div id="playerInputContainer">
         <textarea id="playerNames" rows="3" placeholder="Enter player names separated by commas"></textarea>
-
         <button onclick="startGame();updateHistogram()">Start Game</button>
     </div>
 
-
-
     <div id="mainUI" style="display: none;">
-
         <div class="container">
             <div id="statusBar" class="status-bar">
                 <div class="status-interval active"></div>
@@ -248,7 +45,6 @@
                 </label>
             </div>
             <canvas id="histogram" style="opacity: 1; pointer-events: auto;"></canvas>
-
         </div>
     </div>
 
