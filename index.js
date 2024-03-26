@@ -1,3 +1,4 @@
+
 const playerInputContainer = document.getElementById('playerInputContainer');
 const playerNamesInput = document.getElementById('playerNames');
 const currentPlayerDisplay = document.getElementById('currentPlayer');
@@ -11,8 +12,13 @@ const dice1 = document.getElementById('dice1');
 const dice2 = document.getElementById('dice2');
 const rollButton = document.getElementById('rollButton');
 const message = document.getElementById('message');
-const diceSound = new Audio('dice.ogg');
-const attackSound = new Audio('attack.ogg');
+const diceSound = new Audio('assets/dice.ogg');
+const attackSound = new Audio('assets/attack.ogg');
+const allySound = new Audio('assets/ally.ogg');
+const paul1 = new Audio('assets/paul1.ogg');
+const paul2 = new Audio('assets/paul2.ogg');
+const paul3 = new Audio('assets/paul3.ogg');
+
 const showHistogram = document.getElementById('showHistogram');
 const histogram = document.getElementById('histogram').getContext('2d');
 const diceUrls = [
@@ -181,6 +187,21 @@ function nextTurn() {
     if (currentPlayerIndex >= players.length) {
         currentPlayerIndex = 0;
     }
+
+    if((levenshteinDistance('ally', players[currentPlayerIndex])<= 2) || levenshteinDistance('allison', players[currentPlayerIndex])<= 2){
+        allySound.play();
+    }
+    else if(levenshteinDistance('paul', players[currentPlayerIndex])<=2){
+        const randomValue = Math.random();
+        if (randomValue < 0.33) {
+            paul1.play();
+        } else if (randomValue < 0.66) {
+            paul2.play();
+        } else {
+            paul3.play();
+        }
+    }
+
     currentPlayerDisplay.textContent = `${players[currentPlayerIndex]}'s Turn`;
     currentPlayerIndex++;
     startTime = new Date();
@@ -292,4 +313,35 @@ function resetStatusBar() {
     intervals[0].classList.add('active');
     intervals[0].style.backgroundColor = ''; // Let the CSS handle the color of the active interval
     updateStatusBarColor('black')
+}
+
+function levenshteinDistance(s1, s2) {
+    var matrix = [];
+    var i, j;
+
+    // Initialize matrix with zeros
+    for (i = 0; i <= s1.length; i++) {
+        matrix[i] = [i];
+    }
+    for (j = 0; j <= s2.length; j++) {
+        matrix[0][j] = j;
+    }
+
+    // Fill in the matrix
+    for (i = 1; i <= s1.length; i++) {
+        for (j = 1; j <= s2.length; j++) {
+            if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1, // substitution
+                    matrix[i][j - 1] + 1,     // insertion
+                    matrix[i - 1][j] + 1      // deletion
+                );
+            }
+        }
+    }
+
+    // Return the bottom-right value of the matrix
+    return matrix[s1.length][s2.length];
 }
